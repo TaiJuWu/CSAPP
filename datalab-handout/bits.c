@@ -236,11 +236,14 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  int a = !!(x ^ 0x0);    // !isEqual(x, 0x0);
-  int b = ~a + 1;         // negate(a)
-  int c = ~(y & ~b) + 1;  // negate(y & ~b)
-  int d = ~(z & b) + 1;   // negate(z & b);
-  return c + d + y + z;
+  // int a = !!(x ^ 0x0);    // !isEqual(x, 0x0);
+  // int b = ~a + 1;         // negate(a)
+  // int c = ~(y & ~b) + 1;  // negate(y & ~b)
+  // int d = ~(z & b) + 1;   // negate(z & b);
+  // return c + d + y + z;
+
+  int mask = !x + ~1 + 1;
+  return (mask & y) | (~mask & z);
 }
 
 /* 
@@ -284,7 +287,48 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  /*
+   * from `./tests.c` file, 
+   * we can get a fact that if x < 0, then `howManyBits(x) == howManyBits(~x)`
+   * so, `x32` is for this purpose: flip bits if x < 0
+   * 
+   * then, howManyBits is to find the highest position of `1`, plus 1 bit for sign
+   * so we take half of bit vector, to see if high half has `1`
+   * if high half has `1`, then we take this half, record corresponding position (16, 8, 4 ...)
+   * otherwise, we take the low half
+   * can continue until only 1 bit left
+   * 
+   * finally, sum them up, plus 1 for sign bit
+   */
+  int x32 = x ^ (x >> 31);
+  int neg1 = ~1 + 1;
+
+  int high16 = x32 >> 16;
+  int high16With1 = !!high16;
+  int high16Mask = high16With1 + neg1;
+  int x16 = ((~high16Mask & high16) | (high16Mask & x32)) & ((1 << 16) + neg1);
+
+  int high8 = x16 >> 8;
+  int high8With1 = !!high8;
+  int high8Mask = high8With1 + neg1;
+  int x8 = ((~high8Mask & high8) | (high8Mask & x16)) & 0xFF;
+
+  int high4 = x8 >> 4;
+  int high4With1 = !!high4;
+  int high4Mask = high4With1 + neg1;
+  int x4 = ((~high4Mask & high4) | (high4Mask & x8)) & 0x0F;
+
+  int high2 = x4 >> 2;
+  int high2With1 = !!high2;
+  int high2Mask = high2With1 + neg1;
+  int x2 = ((~high2Mask & high2) | (high2Mask & x4)) & 0x03;
+
+  int high1 = x2 >> 1;
+  int high1With1 = !!high1;
+  int high1Mask = high1With1 + neg1;
+  int x1 = ((~high1Mask & high1) | (high1Mask & x2)) & 0x01;
+
+  return (high16With1 << 4) + (high8With1 << 3) + (high4With1 << 2) + (high2With1 << 1) + high1With1 + x1 + 1;
 }
 
 //float
