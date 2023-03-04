@@ -134,6 +134,21 @@ NOTES:
 
 
 #endif
+
+// my define function
+int isNeg(int x) {
+  return (x >> 31);
+}
+
+int isEqual(int x, int y) {
+  return !(x ^ y);
+}
+
+int isAddOverflow(int x, int y) {
+  int c = x + y;
+  return (c >> 31) ^ (y >> 31);
+}
+
 //1
 /* 
  * bitXor - x^y using only ~ and & 
@@ -143,8 +158,9 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  return ~(~x & ~y) & ~(x & y);
 }
+
 /* 
  * tmin - return minimum two's complement integer 
  *   Legal ops: ! ~ & ^ | + << >>
@@ -152,10 +168,9 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int tmin(void) {
-
-  return 2;
-
+  return 1 << 31;
 }
+
 //2
 /*
  * isTmax - returns 1 if x is the maximum, two's complement number,
@@ -165,8 +180,9 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+  return !(~(x ^ (x + 1))) & !!(x+1);
 }
+
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
  *   where bits are numbered from 0 (least significant) to 31 (most significant)
@@ -176,8 +192,13 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  // isEqual((x & 0xAAAAAAAA),  0xAAAAAAAA);
+  int a = 0xAA << 8;
+  int b = a | 0xAA;
+  int c = (b << 16) | b;
+  return !((x & c) ^ c);
 }
+
 /* 
  * negate - return -x 
  *   Example: negate(1) = -1.
@@ -186,8 +207,9 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x + 1;
 }
+
 //3
 /* 
  * isAsciiDigit - return 1 if 0x30 <= x <= 0x39 (ASCII codes for characters '0' to '9')
@@ -199,8 +221,13 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  int a = !(x >> 4 ^ 0x3);
+  int b = x & 0xF;
+  // int c = !!((b + negate(0xA)) & 0x8000);
+  int c = !!((b + (~0xA + 1)) & (1 << 31));
+  return  a & c;
 }
+
 /* 
  * conditional - same as x ? y : z 
  *   Example: conditional(2,4,5) = 4
@@ -209,8 +236,13 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  int a = !!(x ^ 0x0);    // !isEqual(x, 0x0);
+  int b = ~a + 1;         // negate(a)
+  int c = ~(y & ~b) + 1;  // negate(y & ~b)
+  int d = ~(z & b) + 1;   // negate(z & b);
+  return c + d + y + z;
 }
+
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
  *   Example: isLessOrEqual(4,5) = 1.
@@ -219,8 +251,12 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  int yIsPos = !(y >> 31);
+  int xIsNeg = !((x >> 31) + 1);
+  int yMinusXIsPos = !((y + ~x + 1) >> 31); // isNeg(y + negate(x))
+  return (yIsPos & xIsNeg) | ((yIsPos | xIsNeg) & yMinusXIsPos);
 }
+
 //4
 /* 
  * logicalNeg - implement the ! operator, using all of 
@@ -231,8 +267,10 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  // ((x | negate(x)) >> 31) + 1;
+  return ((x | (~x + 1)) >> 31) + 1;
 }
+
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
  *  Examples: howManyBits(12) = 5
@@ -248,6 +286,7 @@ int logicalNeg(int x) {
 int howManyBits(int x) {
   return 0;
 }
+
 //float
 /* 
  * floatScale2 - Return bit-level equivalent of expression 2*f for
@@ -263,6 +302,7 @@ int howManyBits(int x) {
 unsigned floatScale2(unsigned uf) {
   return 2;
 }
+
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
  *   for floating point argument f.
@@ -278,6 +318,7 @@ unsigned floatScale2(unsigned uf) {
 int floatFloat2Int(unsigned uf) {
   return 2;
 }
+
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
  *   (2.0 raised to the power x) for any 32-bit integer x.
