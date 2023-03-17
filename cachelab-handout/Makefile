@@ -21,6 +21,8 @@ tracegen: tracegen.c trans.o cachelab.c
 trans.o: trans.c
 	$(CC) $(CFLAGS) -O0 -c trans.c
 
+test: clean all
+	./csim -s 4 -E 1 -b 4 -t traces/yi.trace
 #
 # Clean the src dirctory
 #
