@@ -8,12 +8,11 @@ typedef void (*test_funct)(int *);
 typedef void (*test_funct_v)(void *);
 
 /* Compute number of cycles used by function f on given set of parameters */
-double fcyc(test_funct f, int* params);
-double fcyc_v(test_funct_v f, void* params[]);
+double fcyc(test_funct f, int *params);
+double fcyc_v(test_funct_v f, void *params[]);
 
 /***********************************************************/
 /* Set the various parameters used by measurement routines */
-
 
 /* When set, will run code to clear cache before each measurement 
    Default = 0
@@ -50,6 +49,3 @@ void set_fcyc_maxsamples(int maxsamples);
    Default = 0.01
 */
 void set_fcyc_epsilon(double epsilon);
-
-
-
